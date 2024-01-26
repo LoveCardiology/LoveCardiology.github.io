@@ -1,6 +1,6 @@
 ---
 title: "**R & Quatro**"
-author: "Edina Hadziselimovic - *Jan 26, 2024*"
+author: "Edina Hadziselimovic — *Jan 26, 2024*"
 output:
   quarto::quarto_html_document:
     theme: null
