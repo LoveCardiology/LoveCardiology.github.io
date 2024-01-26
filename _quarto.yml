@@ -1,0 +1,27 @@
+project:
+  type: website
+  output-dir: docs
+  
+website:
+  title: "**edina.dk**"
+  navbar:
+    left:
+      - href: index.qmd
+    tools:
+      - icon: homepage
+        href: https://edina.dk/
+      - icon: twitter
+        href: https://twitter.com/
+      - icon: github
+        href: https://github.com/LoveCardiology/
+  page-footer:
+    right: "Built with [Quarto](https://quarto.org/)"
+    left: "&copy; Copyright 2024, Edina Hadziselimovic"
+
+format:
+  html:
+    theme: yeti
+    toc: true
+
+editor: source
+

@@ -1,0 +1,166 @@
+---
+title: "**R & Quatro**"
+author: "Edina Hadziselimovic - *Jan 26, 2024*"
+output:
+  quarto::quarto_html_document:
+    theme: null
+    highlight: null
+format:
+  html:
+    theme: yeti
+    toc: true
+    
+editor: source
+
+execute:
+  echo: false
+  
+---
+
+```{r}
+#| message: FALSE
+#| warnings: FALSE
+
+library(tidyverse)
+library(dplyr)
+library(readr)
+
+mexico_dm <- readr::read_csv(here::here("data-raw/Database_Mexican_children_with_different_types_of_DM.csv"))
+
+```
+
+
+```{r}
+## Data wranging
+
+mexico_dm_exercise <- mexico_dm %>%
+  rename(age = "2_Age_at_onset_DM") %>%
+  rename(DM_type = "11_Type_of_DM") %>%
+  rename(metformin = "4_Metformin_use") %>%
+  rename(insulin = "5_Insulin_use") %>%
+  rename(hypertension = "7_Hypertension") %>%
+  rename(bmi = "9_BMI") %>%
+  rename(cholesterol = "13_Cholesterol")
+
+```
+
+### Figures
+
+```{r}
+#| label: fig-diabetes-insulin1
+#| fig-cap: "Insulin and Metformine use according to types of diabetes mellitus and hypertension status"
+#| fig-subcap:
+#|  - "Barplot with distribution of Insulin and Metformin users among DM patients, stratified by types of diabetes"
+#|  - "Stacked barplot with distribution of Insulin and Metformin users among DM patients, stratified by hypertension status"
+#| layout-ncol: 1
+
+
+barplot_1 <- mexico_dm_exercise %>%
+  mutate(insulin = ifelse(insulin == 1, "Yes", "No")) %>%
+  mutate(metformin = ifelse(metformin == 1, "Yes", "No")) %>%
+  mutate(hypertension = ifelse(hypertension == 1, "Hypertension", "No hypertension")) %>%
+  filter(!is.na(insulin), !is.na(metformin)) %>%
+  ggplot(aes(x = insulin, fill = metformin)) +
+  geom_bar(position = position_dodge2(preserve = "single"), width = 0.7) +
+  facet_grid(
+    cols = vars(DM_type),
+    labeller = labeller(DM_type = c("1" = "Type I", "2" = "Type II", "3" = "Type III", "4" = "Type IV"))
+  )
+
+barplot_1 +
+  labs(
+    title = "",
+    subtitle = "Diabetes Types\n \n",
+    x = "Insulin",
+    y = "Count",
+    fill = "Metformin"
+  ) +
+  scale_fill_manual(values = alpha(c("lightblue", "pink"), .7)) +
+  theme(
+    panel.background = element_rect(fill = NA),
+    strip.background = element_rect(colour = "white", fill = "white"),
+    axis.line = element_line(color = "gray50"),
+    plot.title = element_text(hjust = 0, size = 10, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 10, face = "bold"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(margin = margin(b = 1)),
+    legend.key.height = unit(0.5, "lines"),
+    legend.key.width = unit(1, "lines"),
+    legend.key = element_rect(fill = "transparent", color = "transparent"),
+    legend.spacing.y = unit(0.5, "lines")
+  )
+
+###
+
+barplot_1_stacked <- mexico_dm_exercise %>%
+  mutate(insulin = ifelse(insulin == 1, "Yes", "No")) %>%
+  mutate(metformin = ifelse(metformin == 1, "Yes", "No")) %>%
+  mutate(hypertension = ifelse(hypertension == 1, "Hypertension", "No hypertension")) %>%
+  filter(!is.na(insulin), !is.na(metformin)) %>%
+  ggplot(aes(x = insulin, fill = metformin)) +
+  geom_bar(stat = "count", position = "stack", width = 0.4) +
+  facet_grid(cols = vars(hypertension)) +
+  labs(
+    title = "",
+    subtitle = "Hypertension status \n \n",
+    x = "Insulin",
+    y = "Count",
+    fill = "Metformin"
+  ) +
+  scale_fill_manual(values = alpha(c("lightblue", "pink"), .7)) +
+  theme(
+    panel.background = element_rect(fill = NA),
+    strip.background = element_rect(colour = "white", fill = "white"),
+    axis.line = element_line(color = "gray50"),
+    plot.title = element_text(hjust = 0, size = 10, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 10, face = "bold"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(margin = margin(b = 1)),
+    legend.key.height = unit(0.5, "lines"),
+    legend.key.width = unit(1, "lines"),
+    legend.key = element_rect(fill = "transparent", color = "transparent"),
+    legend.spacing.y = unit(0.5, "lines")
+  )
+
+print(barplot_1_stacked)
+```
+
+```{r}
+#| fig-cap: "Scatterplot for BMI and cholesterol distribution by age"
+#| label: fig-cholesterol-bmi-age
+#| message: FALSE
+
+# Scatterplot 1
+scatterplot_1 <- mexico_dm_exercise %>%
+  filter(!is.na(cholesterol), !is.na(bmi), !is.na(age)) %>%
+  ggplot(aes(
+    x = cholesterol,
+    y = bmi,
+    colour = age
+  )) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth(aes(group = 1), colour = "navy", fill = "lightblue", alpha = 0.2)
+
+# label title and exes
+scatterplot_1 +
+  labs(
+    title = "",
+    x = "Cholesterol (mmol/L)",
+    y = "BMI"
+  ) +
+  scale_color_viridis_c(name = "Age") +
+  theme(
+    panel.background = element_rect(fill = NA),
+    strip.background = element_rect(colour = "white", fill = "white"),
+    axis.line = element_line(color = "gray50"),
+    plot.title = element_text(hjust = 0, size = 10, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 10, face = "bold"),
+    legend.title = element_text(size = 10, hjust = 1),
+    legend.text = element_text(margin = margin(b = 0, r = 5)),
+    legend.key.height = unit(0.5, "lines"),
+    legend.key.width = unit(1, "lines"),
+    legend.key = element_rect(fill = "transparent", color = "transparent"),
+    legend.spacing.y = unit(0.5, "lines"),
+    legend.text.align = 1
+  )
+```
